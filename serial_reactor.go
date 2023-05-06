@@ -9,26 +9,28 @@ type ReadEvent struct{}
 
 type SerialReactor struct {
 	*eventual2go.Reactor
-	s *serial.Port
+	s             *serial.Port
+	maxPacketSize int
 }
 
-func New() (sr *SerialReactor, err error) {
-	c := &serial.Config{Name: "/dev/ttyUSB1", Baud: 9600}
+func New(port string, baudrate int, maxPacketSize int) (sr *SerialReactor, err error) {
+	c := &serial.Config{Name: port, Baud: baudrate}
 	s, err := serial.OpenPort(c)
 	if err != nil {
 		return
 	}
 
 	sr = &SerialReactor{
-		Reactor: eventual2go.NewReactor(),
-		s:       s,
+		Reactor:       eventual2go.NewReactor(),
+		s:             s,
+		maxPacketSize: maxPacketSize,
 	}
 	go sr.listen()
 	return
 }
 
 func (sr *SerialReactor) listen() {
-	buf := make([]byte, 1024)
+	buf := make([]byte, sr.maxPacketSize)
 	for {
 		n, _ := sr.s.Read(buf)
 		sr.Reactor.Fire(ReadEvent{}, buf[:n])
