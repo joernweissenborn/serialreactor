@@ -1,6 +1,8 @@
 package serialreactor
 
 import (
+	"bufio"
+
 	"github.com/joernweissenborn/eventual2go"
 	"github.com/tarm/serial"
 )
@@ -33,10 +35,9 @@ func (sr *SerialReactor) Listen() {
 }
 
 func (sr *SerialReactor) listen() {
-	buf := make([]byte, sr.maxPacketSize)
-	for {
-		n, _ := sr.s.Read(buf)
-		sr.Reactor.Fire(ReadEvent{}, buf[:n])
+	scanner := bufio.NewScanner(sr.s)
+	for scanner.Scan() {
+		sr.Reactor.Fire(ReadEvent{}, scanner.Text())
 	}
 }
 
