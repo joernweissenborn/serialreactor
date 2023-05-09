@@ -25,8 +25,11 @@ func New(port string, baudrate int, maxPacketSize int) (sr *SerialReactor, err e
 		s:             s,
 		maxPacketSize: maxPacketSize,
 	}
-	go sr.listen()
 	return
+}
+
+func (sr *SerialReactor) Listen() {
+	go sr.listen()
 }
 
 func (sr *SerialReactor) listen() {
